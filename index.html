@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pathfinder Expected Weapon Damage</title>
+<script src="https://kit.fontawesome.com/2eee859cc2.js" crossorigin="anonymous"></script>
+<script type="text/javascript" src="math.js"></script>
+<script>
+
+function checkInt(name) {
+  var entry = document.getElementById(name).value;
+  if (~Number.isInteger(entry)) {
+    var MAX = document.getElementById(name).max;
+    var MIN = document.getElementById(name).min;
+    var newNum = Math.round(entry);
+    if (newNum<MIN) {
+      newNum = MIN;
+    } else if (newNum>MAX) {
+      newNum = MAX;
+    }
+    document.getElementById(name).value = newNum;
+  }
+}
+
+function prob(n,s,p) {
+  var outerpower = Math.pow(s,-n);
+  var upperLim = Math.floor((p-n)/s);
+  var sum = 0; 
+  for (let j=0; j<=upperLim ; j++) {
+    sum += Math.pow(-1,j)*math.combinations(n,j)*math.combinations(p-s*j-1,n-1);
+  }
+  var probability = outerpower*sum;
+  return probability;
+}
+
+function dLethal(r,l,n,s,h,d1,d2,d3) {
+  var dL = 0;
+  for (let k=1; k <= r-l; k++) {
+    dL += k*prob(n,s,k - Math.floor(h*d1) - d2 - d3);
+  }
+  return dL;
+}
+
+function dNon(r,l,n,s,h,d1,d2,d3) {
+  var dN = 0;
+  for (let x=n; x <= -(Math.floor(h*d1) + d2 + d3); x++) {
+    dN += prob(n,s,x);
+  }
+  return dN;
+}
+
+/* may want to split calcDmg into several pieces */
+/* 1. value grabber */
+/* 2. calculation doer */
+/* 3. value setter */
+/* call them all in one function specifically for 1 attack */
+/* then you can use the parts you need in other moder modularly */
+
+function calcDmg() {
+  var n = Number(document.getElementById("n").value);
+  var w = Number(document.getElementById("w").value);
+  var s = Number(document.getElementById("s").value);
+  var m = Number(document.getElementById("m").value);
+
+  if (document.getElementById('quick').checked) {
+    var a = Number(document.getElementById("overallA").value);
+    var c = 0;
+    var d1 = 0;
+    var d2 = Number(document.getElementById("overallD").value);
+    var d3 = 0;
+    var h = 0;
+  } else {
+    var BAB = Number(document.getElementById("detailBAB").value);
+    var Iter = Number(document.getElementById("detailIter").value);
+    var AttMod = Number(document.getElementById("detailAttMod").value);
+    var Size = Number(document.getElementById("detailSize").value);
+    var Prof = Number(document.getElementById("detailProf").value);
+    var WF = Number(document.getElementById("detailWF").value);
+    var MiscA = Number(document.getElementById("detailMiscA").value);
+    var c = Number(document.getElementById("detailCC").value);
+    var d1 = Number(document.getElementById("detailDamMod").value);
+    var WS = Number(document.getElementById("detailWS").value);
+    var MiscDmult = Number(document.getElementById("detailMiscDmult").value);
+    var d3 = Number(document.getElementById("detailMiscDnoMult").value);
+
+    var Weap = Number(document.getElementById("detailWeap").value);
+    if (Weap == 0.5) {
+      var WeapA = 1;
+      var WeapD = 0;
+    } else {
+      var WeapA = Weap;
+      var WeapD = Weap;
+    }
+
+    var PW = Number(document.getElementById("detailPW").value);
+    var TW = Number(document.getElementById("detailTW").value);
+    var PO = Number(document.getElementById("detailPO").value);
+    var OH = Number(document.getElementById("detailOH").value);
+    var TWF = Number(document.getElementById("detailTWF").value);
+
+    if (PW == 1) { /* 2H weapon */
+      var h = 1.5;
+      var TWFpen = 0;
+    } else if (TW == 0) { /* 1H weapon but not TWF */
+      var h = 1;
+      var TWFpen = 0;
+    } else if (PO == 0) { /* TWF, strike with primary hand */
+      var h = 1;
+      if (OH == 0 && TWF == 0) { /* TWF, primary strike, light off-hand, no TWF feat */
+        TWFpen = -4;
+      } else if (OH == 0 && TWF == 1) { /* TWF, primary strike, light off-hand, TWF feat */
+        TWFpen = -2;
+      } else if (OH == 1 && TWF == 0) { /* TWF, primary strike, 1H off-hand, no TWF feat */
+        TWFpen = -6;
+      } else { /* TWF, primary strike, 1H off-hand, TWF feat */
+        TWFpen = -4;
+      }
+    } else { /* TWF, strike with off-hand */
+      var h = 0.5;
+      if (OH == 0 && TWF == 0) { /* TWF, off-hand strike, light off-hand, no TWF feat */
+        TWFpen = -8;
+      } else if (OH == 0 && TWF == 1) { /* TWF, off-hand strike, light off-hand, TWF feat */
+        TWFpen = -2;
+      } else if (OH == 1 && TWF == 0) { /* TWF, off-hand strike, 1H off-hand, no TWF feat */
+        TWFpen = -10;
+      } else { /* TWF, off-hand strike, 1H off-hand, TWF feat */
+        TWFpen = -4;
+      }
+    }
+        
+    var PA = Number(document.getElementById("detailPA").value);
+    if (PA == 0) {
+      var PAA = 0;
+      var PAD = 0;
+    } else if (PA == 1) {
+      var PAA = -1*(1+Math.floor(BAB/4));
+      var PAD = h*2*(1+Math.floor(BAB/4));
+    } else {
+      var PAA = 0;
+      var PAD = h*2*(1+Math.floor(BAB/4));
+    }
+    
+    if (d1 < 0) { /* Negative ability modifier for damage */
+      h = 1;
+    } /* do this after PA calc so you can use handedness there */
+    
+    var a = BAB + Iter + AttMod + Size + Prof + WF + MiscA + WeapA + PAA + TWFpen;
+    var d2 = WS + MiscDmult + WeapD + PAD;
+  }
+
+  if (document.getElementById('customAC').checked) {
+    var A = Number(document.getElementById("A1").value);
+  } else {
+    var A = Number(document.getElementById("A2").value);    
+  }
+
+  var r = Math.max(n*s + Math.floor(h*d1) + d2 + d3,0);
+  var l = Math.max(n + Math.floor(h*d1) + d2 + d3,0);  
+  
+  if (n + Math.floor(h*d1) + d2 + d3 < 1) {
+    var dL = dLethal(r,l,n,s,h,d1,d2,d3)
+    var dN = dNon(r,l,n,s,h,d1,d2,d3);
+    var dLnoD3 = dLethal(r,l,n,s,h,d1,d2,0);
+    var dNnoD3 = dNon(r,l,n,s,h,d1,d2,0);
+  } else {
+    var dL = n*(1+s)/2 + Math.floor(h*d1) + d2 + d3;
+    var dN = 0;
+  }
+  
+  var L = Math.max(A-a,2);
+  var K = Math.min(L,20);
+  var M = Math.max(K,w);
+  var LcritBonus = Math.max(A-a-c,2);
+  var KcritBonus = Math.min(LcritBonus,20);
+  
+  if (dN != 0) {
+    var ELDcritThreat = (KcritBonus-1)*dL/20 + (21 - KcritBonus)*(m*dLnoD3+d3)/20;
+    var ENDcritThreat = (KcritBonus-1)*dN/20 + (21 - KcritBonus)*(m*dNnoD3)/20;
+  } else {
+    var ELDcritThreat = (KcritBonus-1)*dL/20 + (21 - KcritBonus)*(m*(dL-d3)+d3)/20;
+    var ENDcritThreat = 0;
+  }
+
+  var ELD = (M-K)*dL/20 + (21 - M)*ELDcritThreat/20;
+  var END = (M-K)*dN/20 + (21 - M)*ENDcritThreat/20;
+
+  if (a < 0) {
+    var attPM = "";
+  } else {
+    var attPM = "+"
+  }
+  
+  var damPlus = Math.floor(h*d1) + d2;
+  if (damPlus < 0) {
+    var damPM = "";
+  } else {
+    var damPM = "+"
+  }
+  
+  if (d3 > 0) {
+    d3str = " (+" + d3 + ")";
+  } else {
+    d3str = "";
+  }
+  
+  document.getElementById("Abonus").innerHTML = attPM + a + " to attack";
+  document.getElementById("Dbonus").innerHTML = damPM + damPlus + d3str + " to damage";
+
+  if (dN != 0) {
+  document.getElementById("result").innerHTML = ELD.toFixed(2) + " lethal / " + END.toFixed(2) + " nonlethal damage";
+  } else {
+  document.getElementById("result").innerHTML = ELD.toFixed(2) + " damage";  
+  }
+}
+
+function placeWeapon() {
+  var n = document.getElementById("n").value;
+  var s = document.getElementById("s").value;
+  var w = Number(document.getElementById("w").value);
+  var m = document.getElementById("m").value;
+  if (w == 20) {
+    w = "";
+  } else {
+    w = w + "-";
+  }
+  document.getElementById("weapon").innerHTML = n + "d" + s + " / " + w + "20 / x" + m;
+}
+
+function placeAC() {
+  if (document.getElementById("customAC").checked) {
+    var currentAC = Number(document.getElementById("A1").value);
+  } else {
+    var currentAC = Number(document.getElementById("A2").value);  
+  }
+  document.getElementById("currentAC").innerHTML = "vs. " + currentAC + " AC";
+}
+
+function bonusFlip() {
+  if (document.getElementById('quick').checked) {
+    document.getElementById('quickBonusList').style.display = "block";
+    document.getElementById('detailBonusList').style.display = "none";
+  } else {
+    document.getElementById('quickBonusList').style.display = "none";
+    document.getElementById('detailBonusList').style.display = "block";
+  }
+  TWflip();
+}
+
+function acFlip() {
+  if (document.getElementById('customAC').checked) {
+    document.getElementById('chooseACList').style.display = "block";
+    document.getElementById('avgACList').style.display = "none";
+  } else {
+    document.getElementById('chooseACList').style.display = "none";
+    document.getElementById('avgACList').style.display = "block";
+  }
+}
+
+function TWflip() {
+  var TWlist = document.getElementsByClassName("detailTWtext");
+  var TWinputList = document.getElementsByClassName("detailTWinput");
+  if (document.getElementById('detailPW').value == 1 || document.getElementById('detailPW').disabled == true) {
+    for (let i = 0; i < TWlist.length; i++) {
+      TWlist[i].style.color = "lightgrey";
+    }
+    for (let i = 0; i < TWinputList.length; i++) {
+      TWinputList[i].disabled = true;
+    }    
+  } else {
+    for (let i = 0; i < TWlist.length; i++) {
+      TWlist[i].style.color = "black";
+    }
+    for (let i = 0; i < TWinputList.length; i++) {
+      TWinputList[i].disabled = false;
+    }    
+  }
+  POflip();
+}
+
+function POflip() {
+  var POlist = document.getElementsByClassName("detailPOtext");
+  var POinputList = document.getElementsByClassName("detailPOinput");
+  if (document.getElementById('detailTW').value == 0 || document.getElementById('detailTW').disabled == true) {
+    for (let i = 0; i < POlist.length; i++) {
+      POlist[i].style.color = "lightgrey";
+    }
+    for (let i = 0; i < POinputList.length; i++) {
+      POinputList[i].disabled = true;
+    }    
+  } else {
+    for (let i = 0; i < POlist.length; i++) {
+      POlist[i].style.color = "black";
+    }
+    for (let i = 0; i < POinputList.length; i++) {
+      POinputList[i].disabled = false;
+    }    
+  }
+}
+
+function Collapse(num) {
+  var correctPanel = "collapser" + num;
+  if (document.getElementById(correctPanel).style.display == "block") {
+    document.getElementById('collapser1').style.display = "none";
+    document.getElementById('collapser2').style.display = "none";
+    document.getElementById('collapser3').style.display = "none";      
+  } else if (num == 1) {
+    document.getElementById('collapser1').style.display = "block";
+    document.getElementById('collapser2').style.display = "none";
+    document.getElementById('collapser3').style.display = "none";  
+  } else if (num == 2) {
+    document.getElementById('collapser1').style.display = "none";
+    document.getElementById('collapser2').style.display = "block";
+    document.getElementById('collapser3').style.display = "none";      
+  } else {
+    document.getElementById('collapser1').style.display = "none";
+    document.getElementById('collapser2').style.display = "none";
+    document.getElementById('collapser3').style.display = "block";          
+  }
+}
+
+function colorChange(id) {
+  document.getElementById(id).style.color = "black";
+}
+
+function colorChangeBack(id) {
+  document.getElementById(id).style.color = "white";
+}
+
+</script>
+
+<style>
+
+.Title {
+  padding: 10px; 
+  font-family: Helvetica; 
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-bottom: 10px solid white;
+  text-align: left;
+  outline: none;
+  margin-top: 10px; 
+  font-size: 35px; 
+  background-color: #2B7A78;
+}
+
+.MainOption {
+  padding: 10px; 
+  border: none;
+  text-align: left;
+  outline: none;
+  background-color: #3AAFA9; 
+  width: 33%;
+  font-family: Helvetica; 
+  font-size: 25px; 
+  color: white;
+}
+
+.editButton {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  float: right;
+}
+
+.MOdisplay {
+  border-left: 1px solid lightgray; 
+  border-bottom: 1px solid lightgray; 
+  border-right: 1px solid lightgray; 
+  text-align: center;
+  background-color: #DEF2F1;
+  padding: 20px;
+}
+
+.damDisplay {
+  border-top: 10px solid white;
+  font-weight: bold;
+  text-align: center;
+  background-color: black;
+  padding: 20px;
+}
+
+.arrowList {
+  list-style-type: none;
+}
+
+.arrowItem {
+  margin: 5px 0;
+}
+
+.arrowSpace {
+  margin-right: 5px;
+  color: #2B7A78;
+}
+
+.arrowSpaceSub {
+  margin-right: 5px;
+  color: lightgray;
+}
+
+/* Customize the label (the container) */
+.container {
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 12px;
+  display: block;
+  cursor: pointer;
+  font-family: Helvetica;
+  font-weight: bold;
+  font-size: 20px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hide the browser's default radio button */
+.container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+/* Create a custom radio button */
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 22px;
+  width: 22px;
+  background-color: lightgray;
+  border-radius: 50%;
+}
+
+/* On mouse-over, add a grey background color */
+.container:hover input ~ .checkmark {
+  background-color: #2B7A78;
+}
+
+/* When the radio button is checked, add a blue background */
+.container input:checked ~ .checkmark {
+  background-color: #2B7A78;
+}
+
+/* Create the indicator (the dot/circle - hidden when not checked) */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+/* Show the indicator (dot/circle) when checked */
+.container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+/* Style the indicator (dot/circle) */
+.container .checkmark:after {
+  top: 6px;
+  left: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<table style="width:100%;">
+  <tr>
+    <td colspan="3" class="Title">Expected damage (one attack)
+      <span style="float: right; margin-right: 5px;">
+        <span style="padding-right: 10px; padding-left: 10px; border-left: 1px dotted lightgray; border-right: 1px dotted lightgray;"><i id="oneFist" class="fa-solid fa-hand-fist" style="opacity: 0.3;"></i></span><span style="padding: 0px 10px 0px 10px; border-right: 1px dotted lightgray;"><i id="twoFist1" class="fa-solid fa-hand-fist"></i><i id="twoFist2" class="fa-solid fa-hand-fist"></i></span><i id="growth" class="fa-solid fa-chart-column" style="padding-left: 10px;"></i>
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td class="MainOption">Weapon Properties
+      <button class="editButton" onmouseover="colorChange('edit1')" onmouseout="colorChangeBack('edit1')" onclick="Collapse(1)">
+        <i id="edit1" class="fa-solid fa-pencil" style="font-size: 20px; color: white;"></i>
+      </button>
+    </td>
+    <td class="MainOption">Bonuses / Penalties
+      <button class="editButton" onmouseover="colorChange('edit2')" onmouseout="colorChangeBack('edit2')" onclick="Collapse(2)">
+        <i id="edit2" class="fa-solid fa-pencil" style="font-size: 20px; color: white;"></i>
+      </button>
+    </td>
+    <td class="MainOption">Enemy AC
+      <button class="editButton" onmouseover="colorChange('edit3')" onmouseout="colorChangeBack('edit3')" onclick="Collapse(3)">
+        <i id="edit3" class="fa-solid fa-pencil" style="font-size: 20px; color: white;"></i>
+      </button>
+    </td>
+  </tr>
+  <tr>
+    <td class="MOdisplay">
+      <div id="weapon" style="font-size: 30px">1d6 / 20 / x2</div>
+    </td>
+    <td class="MOdisplay">
+      <span id="Abonus" style="font-size: 30px">+0 to attack</span><br>
+      <hr style="border: 1px dashed lightgray;">
+      <span id="Dbonus" style="font-size: 30px">+0 to damage</span>
+    </td>
+    <td class="MOdisplay">
+      <span id="currentAC" style="font-size: 30px">vs. 15 AC</span>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3">
+      <div id="collapser1" style="padding: 10px; display: none;">
+      <label class="container">Weapon properties
+        <input type="radio" id="weaponquals" name="weaponQual" value="weaponquals" checked="checked">
+        <span class="checkmark"></span>
+      </label>
+        <ul class="arrowList">
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> Number of weapon damage dice:
+          <input type="number" id="n" name="n" min="1" max="20" value="1" oninput="checkInt('n'); placeWeapon(); calcDmg();">
+        </li>
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> Size of weapon damage dice:
+          <select id="s" name="s" oninput="placeWeapon(); calcDmg();">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="6" selected>6</option>
+            <option value="8">8</option>
+            <option value="10">10</option>
+            <option value="12">12</option>
+          </select>
+        </li>
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> Critical threat range starts at:
+          <input type="number" id="w" name="w" min="14" max="20" value="20" oninput="checkInt('w'); placeWeapon(); calcDmg();">
+        </li>
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> Critical hit damage multiplier:
+          <input type="number" id="m" name="m" min="2" max="5" value="2" oninput="checkInt('m'); placeWeapon(); calcDmg();">
+        </li>
+      </ul>
+      </div>
+      <div id="collapser2" style="padding: 10px; display: none;">
+      <label class="container">Quick setup
+        <input type="radio" id="quick" name="bonuses" value="quick" onclick="bonusFlip(); calcDmg();" checked="checked">
+        <span class="checkmark"></span>
+      </label>
+        <ul id="quickBonusList" class="arrowList">
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="quickAtext" class="quickText">Overall attack roll modifier: </span>
+          <input type="number" id="overallA" name="overallA" class="overallInput" min="-20" max="40" value="0" oninput="checkInt('overallA'); calcDmg();">
+        </li>
+        <li class="arrowItem">
+          <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="quickDtext" class="quickText">Overall damage roll modifier: </span>
+          <input type="number" id="overallD" name="overallD" class="overallInput" min="-10" max="40" value="0" oninput="checkInt('overallD'); calcDmg();">
+        </li>
+      </ul>
+      <label class="container">Detailed setup
+        <input type="radio" id="detailed" name="bonuses" value="detailed" onclick="bonusFlip(); calcDmg();">
+        <span class="checkmark"></span>
+      </label>
+        <ul id="detailBonusList" class="arrowList" style="display: none;">
+          <li class="arrowItem">
+            <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="detAtext" class="detailText">Attack roll modifiers: </span>
+              <ul class="arrowList" style="margin: 15px 0px 15px 15px;">
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detBABtext" class="detailText">BAB: </span>
+                    <input type="number" id="detailBAB" name="detailBAB" class="detailInput" min="0" max="20" value="0" oninput="checkInt('detailBAB'); calcDmg();">
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detItertext" class="detailText">Iterative attack modifier: </span>
+                    <select id="detailIter" name="detailIter" class="detailInput" oninput="calcDmg();">
+                      <option value="0">1st or only attack (BAB)</option>
+                      <option value="-5">2nd attack (BAB -5)</option>
+                      <option value="-10">3rd attack (BAB -10)</option>
+                      <option value="-15">4th attack (BAB -15)</option>
+                    </select><br>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detAttModtext" class="detailText">Ability score modifier relevant to attacking: </span>
+                    <input type="number" id="detailAttMod" name="detailAttMod" class="detailInput" min="-20" max="20" value="0" oninput="checkInt('detailAttMod'); calcDmg();">
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detSizetext" class="detailText">Size modifier: </span>
+                    <select id="detailSize" name="detailSize" class="detailInput" oninput="calcDmg();">
+                      <option value="8">Fine</option>
+                      <option value="4">Diminutive</option>
+                      <option value="2">Tiny</option>
+                      <option value="1">Small</option>
+                      <option value="0" selected>Medium</option>
+                      <option value="-1">Large</option>
+                      <option value="-2">Huge</option>
+                      <option value="-4">Gargantuan</option>
+                      <option value="-8">Colossal</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detProftext" class="detailText">Proficient with weapon? </span>
+                    <select id="detailProf" name="detailProf" class="detailInput" oninput="calcDmg();">
+                      <option value="0">Yes</option>
+                      <option value="-4">No</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detWFtext" class="detailText">Weapon Focus feats? </span>
+                    <select id="detailWF" name="detailWF" class="detailInput" oninput="calcDmg();">
+                      <option value="0">None</option>
+                      <option value="1">WF</option>
+                      <option value="2">WF and Greater WF</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detMiscAtext" class="detailText">Other attack bonuses/penalties: </span>
+                    <input type="number" id="detailMiscA" name="detailMiscA" class="detailInput" min="-20" max="40" value="0" oninput="checkInt('detailMiscA'); calcDmg();">
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detCCtext" class="detailText">Critical confirmation bonus: </span>
+                    <input type="number" id="detailCC" name="detailCC" class="detailInput" min="0" max="20" value="0" oninput="checkInt('detailCC'); calcDmg();">
+                </li>
+              </ul>
+          </li>
+          <li class="arrowItem">
+            <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="detDtext" class="detailText">Damage roll modifiers: </span>
+              <ul class="arrowList" style="margin: 15px 0px 15px 15px;">
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detDamModtext" class="detailText">Ability score modifier affecting damage (do not multiply by anything) : </span>
+                    <input type="number" id="detailDamMod" name="detailDamMod" class="detailInput" min="-20" max="20" value="0" oninput="checkInt('detailDamMod'); calcDmg();">
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detWStext" class="detailText">Weapon Specialization feats? </span>
+                    <select id="detailWS" name="detailWS" class="detailInput" oninput="calcDmg();">
+                      <option value="0">None</option>
+                      <option value="2">WS</option>
+                      <option value="4">WS and Greater WS</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detMiscDmulttext" class="detailText">Other damage bonuses/penalties (multiplied on critical hit): </span>
+                    <input type="number" id="detailMiscDmult" name="detailMiscDmult" class="detailInput" min="-20" max="40" value="0" oninput="checkInt('detailMiscDmult'); calcDmg();">
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detMiscDnoMulttext" class="detailText">Other damage bonuses/penalties (<b>not</b> multiplied on critical hit): </span>
+                    <input type="number" id="detailMiscDnoMult" name="detailMiscDnoMult" class="detailInput" min="-20" max="40" value="0" oninput="checkInt('detailMiscDnoMult'); calcDmg();">
+                </li>
+              </ul>
+          </li>
+
+          <li class="arrowItem">
+            <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="detCtext" class="detailText">Combination modifiers: </span>
+              <ul class="arrowList" style="margin: 15px 0px 15px 15px;">
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detWeaptext" class="detailText">Weapon quality: </span>
+                    <select id="detailWeap" name="detailWeap" class="detailInput" oninput="calcDmg();">
+                      <option value="0">Ordinary</option>
+                      <option value="0.5">Masterwork</option>
+                      <option value="1">Magical (+1 enhancement bonus)</option>
+                      <option value="2">Magical (+2 enhancement bonus)</option>
+                      <option value="3">Magical (+3 enhancement bonus)</option>
+                      <option value="4">Magical (+4 enhancement bonus)</option>
+                      <option value="5">Magical (+5 enhancement bonus)</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detPAtext" class="detailText">Power attack? </span>
+                    <select id="detailPA" name="detailPA" class="detailInput" oninput="calcDmg();">
+                      <option value="0">No</option>
+                      <option value="1">Power attack</option>
+                      <option value="2">Power attack with Furious Focus applied</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detPWtext" class="detailText">Primary weapon is: </span>
+                    <select id="detailPW" name="detailPW" class="detailInput" oninput="TWflip(); calcDmg();">
+                      <option value="0">Wielded in one hand</option>
+                      <option value="1">Wielded using two hands</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detTWtext" class="detailText detailTWtext">Fighting with two weapons? </span>
+                    <select id="detailTW" name="detailTW" class="detailInput detailTWinput" oninput="POflip(); calcDmg();">
+                      <option value="0">No</option>
+                      <option value="1">Yes</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detPOtext" class="detailText detailTWtext detailPOtext" style="color: lightgrey;">Is this strike with primary or off-hand weapon? </span>
+                    <select id="detailPO" name="detailPO" class="detailInput detailTWinput detailPOinput" oninput="calcDmg();">
+                      <option value="0">Primary</option>
+                      <option value="1">Off-hand</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detOHtext" class="detailText detailTWtext detailPOtext" style="color: lightgrey;">Off-hand weapon type: </span>
+                    <select id="detailOH" name="detailOH" class="detailInput detailTWinput detailPOinput" oninput="calcDmg();">
+                      <option value="0">Light</option>
+                      <option value="1">One-handed</option>
+                    </select>
+                </li>
+                <li class="arrowItem">
+                  <i class="fa-solid fa-caret-right arrowSpaceSub"></i> <span id="detTWFtext" class="detailText detailTWtext detailPOtext" style="color: lightgrey;">Two-Weapon Fighting feat? </span>
+                    <select id="detailTWF" name="detailTWF" class="detailInput detailTWinput detailPOinput" oninput="calcDmg();">
+                      <option value="0">No</option>
+                      <option value="1" selected>Yes</option>
+                    </select>
+                </li>
+              </ul>
+            </li>
+        </ul>
+      </div>
+      <div id="collapser3" style="padding: 10px; display: none;">
+        <label class="container">Choose the enemy's AC yourself:
+          <input type="radio" id="customAC" name="AC" value="customAC" onclick="calcDmg(); placeAC(); acFlip();" checked="checked">
+          <span class="checkmark"></span>
+        </label>
+        <ul id="chooseACList" class="arrowList">
+          <li class="arrowItem">
+            <i class="fa-solid fa-caret-right arrowSpace"></i> <span id="ACtext">Enemy AC: </span>
+            <input type="number" id="A1" name="A1" min="-20" max="100" value="15" oninput="checkInt('A1'); calcDmg(); placeAC();">
+          </li>
+        </ul>
+        <label class="container">Choose the average AC for an enemy appropriate for your level:
+          <input type="radio" id="avgAC" name="AC" value="avgAC" onclick="calcDmg(); placeAC(); acFlip();">
+          <span class="checkmark"></span>
+        </label>      
+        <ul id="avgACList" class="arrowList" style="display: none;">
+          <li class="arrowItem">
+            <i class="fa-solid fa-caret-right arrowSpace"></i> Average enemy AC by level of the player character: 
+            <select id="A2" name="A2" oninput="calcDmg(); placeAC();">
+              <option value="14" selected>Level 1 (AC = 14)</option>
+              <option value="15">Level 2 (AC = 15)</option>
+              <option value="16">Level 3 (AC = 16)</option>
+              <option value="17">Level 4 (AC = 17)</option>
+              <option value="18">Level 5 (AC = 18)</option>
+              <option value="18.0">Level 6 (AC = 18)</option>
+              <option value="19">Level 7 (AC = 19)</option>
+              <option value="21">Level 8 (AC = 21)</option>
+              <option value="22">Level 9 (AC = 22)</option>
+              <option value="23">Level 10 (AC = 23)</option>
+              <option value="24">Level 11 (AC = 24)</option>
+              <option value="26">Level 12 (AC = 26)</option>
+              <option value="27">Level 13 (AC = 27)</option>
+              <option value="28">Level 14 (AC = 28)</option>
+              <option value="30">Level 15 (AC = 30)</option>
+              <option value="31">Level 16 (AC = 31)</option>
+              <option value="33">Level 17 (AC = 33)</option>
+              <option value="34">Level 18 (AC = 34)</option>
+              <option value="36">Level 19 (AC = 36)</option>
+              <option value="36.0">Level 20 (AC = 36)</option>
+            </select>
+          </li>
+        </ul>      
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="3" class="damDisplay">
+      <i class="fa-solid fa-skull" style="color: white; font-size: 35px;"></i>
+      <span id="result" style="font-size: 40px; color: white; margin: 20px;">1.10 damage</span>
+      <i class="fa-solid fa-skull" style="color: white; font-size: 35px;"></i>
+    </td>
+  </tr>
+</table>
+
+<script>
+  var detailInputs = document.getElementsByClassName('detailPOinput');
+    for (let i = 0; i < detailInputs.length; i++) {
+      detailInputs[i].disabled = true;
+    }    
+</script>
+
+<!-- other idea 
+Quick compare feature to allow you to compare multiple weapons at the same time?<br>
+Could make 1 or 2 panels below that temporarily saves the weapon/bonus/ED values until overwritten.<br>
+Text field to enter names? -->
+
+</body>
+</html>
