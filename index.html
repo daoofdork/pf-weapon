@@ -232,8 +232,12 @@ function calcDmg() {
     var roundedPercHP = percHP.toFixed(0);
     var adjustedPercHP = roundedPercHP - 50;
   }
+  
+  var hslPerc = 100 - roundedPercHP/2;
+  
   document.getElementById("HParrow").style.left = adjustedPercHP + "%";
   document.getElementById("percText").innerHTML = roundedPercHP + "% of HP";
+  document.getElementById("percText").style.backgroundColor = "hsl(0,100%," + hslPerc.toFixed(0) + "%)";
 }
 
 function placeWeapon() {
@@ -405,8 +409,6 @@ function colorChangeBack(id) {
   background-color: black;
   padding: 20px 5px 20px 5px;
   margin: auto; 
-  width: 85%;
-  border: 1px solid black;
 }
 
 .arrowList {
@@ -425,6 +427,11 @@ function colorChangeBack(id) {
 .arrowSpaceSub {
   margin-right: 5px;
   color: lightgray;
+}
+
+.saveBox {
+  text-align: center;
+  padding: 10px;
 }
 
 /* Customize the label (the container) */
@@ -778,15 +785,39 @@ function colorChangeBack(id) {
         <span id="result" style="font-size: 40px; color: white; margin: 20px;">1.29 damage</span>
         <i class="fa-solid fa-skull" style="color: white; font-size: 35px;"></i>
       </div>
+      <div style="background-color: black;">
       <div style="background: linear-gradient(to right, white 0%, #ff0000 100%); margin: auto; width: 85%; padding: 5px; border: 1px solid black;">
         <span style="font-weight: bold;">What are you even doing?</span>
         <span style="float: right; font-weight: bold;">I AM BECOME DEATH</span>
       </div>
+      </div>
       <div style="padding-top: 5px; text-align: center; margin: auto; width: 85%;">
         <span id="HParrow" style="position: relative; left: -39%; font-size: 25px;">
           <i class="fa-solid fa-sort-up"></i><br>
-          <span id="percText">11% of HP</span>
+          <span id="percText" style="background-color: hsl(0,100%,94.5%); padding-left: 5px; padding-right: 5px; border: 1px solid black;">11% of HP</span>
         </span> 
+      </div>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <div id="savedW1" class="saveBox"> <!-- steal general setup for current bonus/AC boxes? different color maybe? -->
+        Weapon 1 Name (text box)<br>
+        Weapon stat string<br>
+        Attack bonus string<br>
+        Damage bonus string<br>
+        Enemy AC string<br>
+        Expected damage string
+      </div>
+    </td>
+    <td>
+      <div id="savedW2" class="saveBox">
+        Weapon 2
+      </div>
+    </td>
+    <td>
+      <div id="savedW3" class="saveBox">
+        Weapon 3
       </div>
     </td>
   </tr>
