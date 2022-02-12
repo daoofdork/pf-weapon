@@ -743,7 +743,7 @@ function colorChangeBack(id) {
             </li>
         </ul>
       </div>
-      <div id="collapser3" style="padding: 10px;">
+      <div id="collapser3" style="padding: 10px; display: none;">
         <label class="container">Choose the enemy's AC and HP yourself:
           <input type="radio" id="customAC" name="AC" value="customAC" onclick="calcDmg(); placeAC(); acFlip();" checked="checked">
           <span class="checkmark"></span>
@@ -772,7 +772,7 @@ function colorChangeBack(id) {
     </td>
   </tr>
   <tr>
-    <td colspan="3">
+    <td colspan="3" style="padding-top: 8px;">
       <div class="damDisplay">
         <i class="fa-solid fa-skull" style="color: white; font-size: 35px;"></i>
         <span id="result" style="font-size: 40px; color: white; margin: 20px;">1.29 damage</span>
