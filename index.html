@@ -357,6 +357,24 @@ function colorChangeBack(id) {
   document.getElementById(id).style.color = "white";
 }
 
+function saveweapon(num) {
+  /* W1stats W1att W1dam W1ac W1expdam */
+  var Weap = document.getElementById('weapon').innerHTML;
+  var Att = document.getElementById('Abonus').innerHTML;
+  var Dam = document.getElementById('Dbonus').innerHTML;
+  var AC = document.getElementById('currentAC').innerHTML;
+  var ED = document.getElementById('result').innerHTML;
+  
+  document.getElementById('W'+num+'name').value = "Saved Weapon #"+num;
+  document.getElementById('W'+num+'stats').innerHTML = Weap;
+  document.getElementById('W'+num+'att').innerHTML = Att;
+  document.getElementById('W'+num+'dam').innerHTML = Dam;
+  document.getElementById('W'+num+'ac').innerHTML = AC;
+  document.getElementById('W'+num+'expdam').innerHTML = ED;
+  
+  document.getElementById('savedW'+num).style.display = "block"; 
+}
+
 </script>
 
 <style>
@@ -430,8 +448,12 @@ function colorChangeBack(id) {
 }
 
 .saveBox {
+  margin-top: 10px;
+  border: 1px solid lightgray;
+  background-color: #DEF2F1;  
   text-align: center;
-  padding: 10px;
+  padding: 20px;
+  font-family: Helvetica;
 }
 
 /* Customize the label (the container) */
@@ -803,27 +825,59 @@ function colorChangeBack(id) {
   </tr>
   <tr>
     <td>
-      <div id="savedW1" class="saveBox"> <!-- steal general setup for current bonus/AC boxes? different color maybe? -->
-        Weapon 1 Name (text box)<br>
-        Weapon stat string<br>
-        Attack bonus string<br>
-        Damage bonus string<br>
-        Enemy AC string<br>
-        Expected damage string
+      <div id="savedW1" class="saveBox" style="display: none;">
+        <input type="text" id="W1name" name="W1name" value="Saved Weapon #1" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
+        <span id="W1stats">Weapon stat string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W1att">Attack bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W1dam">Damage bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W1ac">Enemy AC string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W1expdam">Expected damage string</span><br>
+        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW1').style.display= 'none';">Clear</button>
       </div>
     </td>
     <td>
-      <div id="savedW2" class="saveBox">
-        Weapon 2
+      <div id="savedW2" class="saveBox" style="display: none;">
+        <input type="text" id="W2name" name="W2name" value="Saved Weapon #2" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
+        <span id="W2stats">Weapon stat string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W2att">Attack bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W2dam">Damage bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W2ac">Enemy AC string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W2expdam">Expected damage string</span><br>
+        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW2').style.display= 'none';">Clear</button>
       </div>
     </td>
     <td>
-      <div id="savedW3" class="saveBox">
-        Weapon 3
+      <div id="savedW3" class="saveBox" style="display: none;">
+        <input type="text" id="W3name" name="W3name" value="Saved Weapon #3" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
+        <span id="W3stats">Weapon stat string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W3att">Attack bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W3dam">Damage bonus string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W3ac">Enemy AC string</span><br>
+        <hr style="border: 1px dashed lightgray; width: 50%;">
+        <span id="W3expdam">Expected damage string</span><br>
+        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW3').style.display= 'none';">Clear</button>
       </div>
     </td>
   </tr>
 </table>
+
+Put this in a permanently visible tr above the weapon slots?
+
+Save weapon statistics to:
+<button onclick="saveweapon(1)">Slot 1</button>
+<button onclick="saveweapon(2)">Slot 2</button>
+<button onclick="saveweapon(3)">Slot 3</button>
 
 
 <script>
