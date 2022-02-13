@@ -358,14 +358,13 @@ function colorChangeBack(id) {
 }
 
 function saveweapon(num) {
-  /* W1stats W1att W1dam W1ac W1expdam */
   var Weap = document.getElementById('weapon').innerHTML;
   var Att = document.getElementById('Abonus').innerHTML;
   var Dam = document.getElementById('Dbonus').innerHTML;
   var AC = document.getElementById('currentAC').innerHTML;
   var ED = document.getElementById('result').innerHTML;
   
-  document.getElementById('W'+num+'name').value = "Saved Weapon #"+num;
+  document.getElementById('W'+num+'name').value = "Weapon #"+num+" Name";
   document.getElementById('W'+num+'stats').innerHTML = Weap;
   document.getElementById('W'+num+'att').innerHTML = Att;
   document.getElementById('W'+num+'dam').innerHTML = Dam;
@@ -447,13 +446,51 @@ function saveweapon(num) {
   color: lightgray;
 }
 
+.saveName {
+  color: white; 
+  background-color: #3AAFA9; 
+  font-size: 20px; 
+  font-weight: bold; 
+  text-align: center; 
+  padding: 5px; 
+  margin-bottom: 10px; 
+  width: 90%;
+}
+
 .saveBox {
   margin-top: 10px;
-  border: 1px solid lightgray;
-  background-color: #DEF2F1;  
+  border: 10px solid #3AAFA9;
+  background-color: black;  
   text-align: center;
   padding: 20px;
   font-family: Helvetica;
+}
+
+.saveStat {
+  color: #3AAFA9;
+  font-weight: bold;
+}
+
+.saveHR {
+  border: 1px solid white; 
+  width: 90%;
+}
+
+.saveButton {
+  background-color: black; 
+  cursor: pointer; 
+  color: white; 
+  border: none; 
+  font-size: 25px; 
+  width: 90%;
+}
+
+.saveToSlot {
+  margin-top: 25px;
+  cursor: pointer; 
+  padding: 10px; 
+  width: 100%; 
+  font-size: 15px;
 }
 
 /* Customize the label (the container) */
@@ -825,60 +862,66 @@ function saveweapon(num) {
   </tr>
   <tr>
     <td>
+      <button onclick="saveweapon(1)" class="saveToSlot">Save stats to slot 1</button>
+    </td>
+    <td>
+      <button onclick="saveweapon(2)" class="saveToSlot">Save stats to slot 2</button>
+    </td>
+    <td>
+      <button onclick="saveweapon(3)" class="saveToSlot">Save stats to slot 3</button>
+    </td>
+  </tr>
+  <tr>
+    <td>
       <div id="savedW1" class="saveBox" style="display: none;">
-        <input type="text" id="W1name" name="W1name" value="Saved Weapon #1" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
-        <span id="W1stats">Weapon stat string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W1att">Attack bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W1dam">Damage bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W1ac">Enemy AC string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W1expdam">Expected damage string</span><br>
-        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW1').style.display= 'none';">Clear</button>
+        <input type="text" id="W1name" name="W1name" value="Weapon #1 Name" class="saveName"><br>
+        <span id="W1stats" class="saveStat">Weapon stat string</span><br>
+        <hr class="saveHR">
+        <span id="W1att" class="saveStat">Attack bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W1dam" class="saveStat">Damage bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W1ac" class="saveStat">Enemy AC string</span><br>
+        <hr class="saveHR">
+        <span id="W1expdam" class="saveStat">Expected damage string</span>
+        <hr class="saveHR">
+        <button class="saveButton" onclick="document.getElementById('savedW1').style.display= 'none';"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </td>
     <td>
       <div id="savedW2" class="saveBox" style="display: none;">
-        <input type="text" id="W2name" name="W2name" value="Saved Weapon #2" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
-        <span id="W2stats">Weapon stat string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W2att">Attack bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W2dam">Damage bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W2ac">Enemy AC string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W2expdam">Expected damage string</span><br>
-        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW2').style.display= 'none';">Clear</button>
+        <input type="text" id="W2name" name="W2name" value="Weapon #2 Name" class="saveName"><br>
+        <span id="W2stats" class="saveStat">Weapon stat string</span><br>
+        <hr class="saveHR">
+        <span id="W2att" class="saveStat">Attack bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W2dam" class="saveStat">Damage bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W2ac" class="saveStat">Enemy AC string</span><br>
+        <hr class="saveHR">
+        <span id="W2expdam" class="saveStat">Expected damage string</span>
+        <hr class="saveHR">
+        <button class="saveButton" onclick="document.getElementById('savedW2').style.display= 'none';"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </td>
     <td>
       <div id="savedW3" class="saveBox" style="display: none;">
-        <input type="text" id="W3name" name="W3name" value="Saved Weapon #3" style="border: 1px solid lightgray; font-size: 20px; font-weight: bold; text-align: center; padding: 5px; margin-bottom: 10px;"><br>
-        <span id="W3stats">Weapon stat string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W3att">Attack bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W3dam">Damage bonus string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W3ac">Enemy AC string</span><br>
-        <hr style="border: 1px dashed lightgray; width: 50%;">
-        <span id="W3expdam">Expected damage string</span><br>
-        <button style="margin-top: 10px; background-color: black; color: white; border: none; font-size: 15px;" onclick="document.getElementById('savedW3').style.display= 'none';">Clear</button>
+        <input type="text" id="W3name" name="W3name" value="Weapon #3 Name" class="saveName"><br>
+        <span id="W3stats" class="saveStat">Weapon stat string</span><br>
+        <hr class="saveHR">
+        <span id="W3att" class="saveStat">Attack bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W3dam" class="saveStat">Damage bonus string</span><br>
+        <hr class="saveHR">
+        <span id="W3ac" class="saveStat">Enemy AC string</span><br>
+        <hr class="saveHR">
+        <span id="W3expdam" class="saveStat">Expected damage string</span>
+        <hr class="saveHR">
+        <button class="saveButton" onclick="document.getElementById('savedW3').style.display= 'none';"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </td>
   </tr>
 </table>
-
-Put this in a permanently visible tr above the weapon slots?
-
-Save weapon statistics to:
-<button onclick="saveweapon(1)">Slot 1</button>
-<button onclick="saveweapon(2)">Slot 2</button>
-<button onclick="saveweapon(3)">Slot 3</button>
-
 
 <script>
   var detailInputs = document.getElementsByClassName('detailPOinput');
@@ -886,11 +929,6 @@ Save weapon statistics to:
       detailInputs[i].disabled = true;
     }    
 </script>
-
-<!-- other idea 
-Quick compare feature to allow you to compare multiple weapons at the same time?<br>
-Could make 1 or 2 panels below that temporarily saves the weapon/bonus/ED values until overwritten.<br>
-Text field to enter names? -->
 
 </body>
 </html>
