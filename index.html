@@ -364,11 +364,11 @@ function saveweapon(num) {
   var AC = document.getElementById('currentAC').innerHTML;
   var ED = document.getElementById('result').innerHTML;
   
-  document.getElementById('W'+num+'name').value = "Weapon #"+num+" Name";
+  document.getElementById('W'+num+'name').value = "Weapon #"+num+" name";
   document.getElementById('W'+num+'stats').innerHTML = Weap;
   document.getElementById('W'+num+'att').innerHTML = Att;
   document.getElementById('W'+num+'dam').innerHTML = Dam;
-  document.getElementById('W'+num+'ac').innerHTML = AC;
+  document.getElementById('W'+num+'ac').innerHTML = "vs. "+AC;
   document.getElementById('W'+num+'expdam').innerHTML = ED;
   
   document.getElementById('savedW'+num).style.display = "block"; 
@@ -446,6 +446,20 @@ function saveweapon(num) {
   color: lightgray;
 }
 
+.subTitle {
+  padding: 10px; 
+  font-family: Helvetica; 
+  font-weight: bold;
+  color: white;
+  border: none;
+  border-bottom: 10px solid white;
+  text-align: left;
+  outline: none;
+  margin-top: 20px;
+  font-size: 20px; 
+  background-color: #3AAFA9;
+}
+
 .saveName {
   color: white; 
   background-color: #3AAFA9; 
@@ -467,12 +481,12 @@ function saveweapon(num) {
 }
 
 .saveStat {
-  color: #3AAFA9;
+  color: white;
   font-weight: bold;
 }
 
 .saveHR {
-  border: 1px solid white; 
+  border: 1px solid #3AAFA9; 
   width: 90%;
 }
 
@@ -486,7 +500,6 @@ function saveweapon(num) {
 }
 
 .saveToSlot {
-  margin-top: 25px;
   cursor: pointer; 
   padding: 10px; 
   width: 100%; 
@@ -571,10 +584,10 @@ function saveweapon(num) {
   <tr>
     <td colspan="3" class="Title">Expected damage (one attack)
       <span style="float: right; margin-right: 5px;">
-        <span style="padding-right: 10px; padding-left: 10px; border-left: 1px dotted lightgray; border-right: 1px dotted lightgray;"><i id="oneFist" class="fa-solid fa-hand-fist" style="opacity: 0.3;"></i></span><span style="padding: 0px 10px 0px 10px; border-right: 1px dotted lightgray;"><i id="twoFist1" class="fa-solid fa-hand-fist"></i><i id="twoFist2" class="fa-solid fa-hand-fist"></i></span><i id="growth" class="fa-solid fa-chart-column" style="padding-left: 10px;"></i>
+        <span style="padding-right: 10px; padding-left: 10px; border-left: 1px dotted lightgray; border-right: 1px dotted lightgray;"><i class="fa-solid fa-dice-d20"></i></span><span style="padding-right: 10px; padding-left: 10px; border-right: 1px dotted lightgray;"><i id="oneFist" class="fa-solid fa-hand-fist" style="opacity: 0.3;"></i></span><span style="padding: 0px 10px 0px 10px; border-right: 1px dotted lightgray;"><i id="twoFist1" class="fa-solid fa-hand-fist"></i><i id="twoFist2" class="fa-solid fa-hand-fist"></i></span><i id="growth" class="fa-solid fa-chart-column" style="padding-left: 10px;"></i>
       </span>
     </td>
-  </tr>
+  </tr> <!-- Title bar -->
   <tr>
     <td class="MainOption">Weapon Properties
       <button class="editButton" onmouseover="colorChange('edit1')" onmouseout="colorChangeBack('edit1')" onclick="Collapse(1)">
@@ -591,7 +604,7 @@ function saveweapon(num) {
         <i id="edit3" class="fa-solid fa-pencil" style="font-size: 20px; color: white;"></i>
       </button>
     </td>
-  </tr>
+  </tr> <!-- Main option titles -->
   <tr>
     <td class="MOdisplay">
       <div id="weapon" style="font-size: 30px">1d6 / 20 / x2</div>
@@ -606,7 +619,7 @@ function saveweapon(num) {
       <hr style="border: 1px dashed lightgray;">
       <span id="currentHP" style="font-size: 30px">12 HP</span>      
     </td>
-  </tr>
+  </tr> <!-- Main option cells -->
   <tr>
     <td colspan="3">
       <div id="collapser1" style="padding: 10px; display: none;">
@@ -836,7 +849,7 @@ function saveweapon(num) {
         </ul>      
       </div>
     </td>
-  </tr>
+  </tr> <!-- Collapsing detail cells for options -->
   <tr>
     <td colspan="3" style="padding-top: 8px; font-family: Helvetica;">
       <div class="damDisplay">
@@ -859,7 +872,14 @@ function saveweapon(num) {
         </span> 
       </div>
     </td>
-  </tr>
+  </tr> <!-- Damage bar -->
+  <tr>
+    <td colspan="3">
+      <div class="subTitle">
+        Compare weapon stats
+      </div>
+    </td>
+  </tr> <!-- Compare weapon title bar -->
   <tr>
     <td>
       <button onclick="saveweapon(1)" class="saveToSlot">Save stats to slot 1</button>
@@ -870,7 +890,7 @@ function saveweapon(num) {
     <td>
       <button onclick="saveweapon(3)" class="saveToSlot">Save stats to slot 3</button>
     </td>
-  </tr>
+  </tr> <!-- Save weapon to slot buttons -->
   <tr>
     <td>
       <div id="savedW1" class="saveBox" style="display: none;">
@@ -920,7 +940,7 @@ function saveweapon(num) {
         <button class="saveButton" onclick="document.getElementById('savedW3').style.display= 'none';"><i class="fa-solid fa-xmark"></i></button>
       </div>
     </td>
-  </tr>
+  </tr> <!-- Collapsing weapon slots -->
 </table>
 
 <script>
